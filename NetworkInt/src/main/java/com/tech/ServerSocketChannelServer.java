@@ -18,25 +18,27 @@ public class ServerSocketChannelServer {
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
         ServerSocket socketChannel = serverSocketChannel.socket();
-        socketChannel.bind(new InetSocketAddress(6000));
+        InetSocketAddress addr = new InetSocketAddress("127.0.0.1",6000);
+        socketChannel.bind(addr);
         String serverAddress = socketChannel.getLocalSocketAddress().toString();
         System.out.print("STARTING SERVER "+serverAddress+" ");
         byte[] data = (message+"  "+serverAddress).getBytes();
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);
+
         while (true){
             System.out.print(".");
             SocketChannel sc = serverSocketChannel.accept();
             if(sc != null){
                 System.out.println();
                 System.out.println("Recived connection from "+sc.socket().getRemoteSocketAddress());
-                if(sc.isConnected()) {
-                    System.out.println("COOOOOOOOOONECTED");
-                    dataBuffer.flip();
+                dataBuffer.flip();
+                while (dataBuffer.hasRemaining()) {
                     sc.write(dataBuffer);
-                    sc.close();
-                }else{
-                    System.out.println("Not Connected");
                 }
+                System.out.println("Done talking");
+                dataBuffer.rewind();
+                sc.close();
+
             }else{
                 try{
                     Thread.sleep(1000);
